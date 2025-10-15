@@ -41,8 +41,16 @@ jobs:
         run: terraform init
         working-directory: ./terraform
 
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./terraform
+
+      - name: Terraform Plan
+        run: terraform plan 
+        working-directory: ./terraform
+
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform destroy -auto-approve
         working-directory: ./terraform
 
       #### Build and Push to AWS ECR ####
