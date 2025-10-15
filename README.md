@@ -108,3 +108,5 @@ The CD workflow runs **only if the CI pipeline completes successfully**. It perf
 - [Checkov Terraform Security](https://www.checkov.io/)  
 - [SonarCloud GitHub Action](https://github.com/SonarSource/sonarqube-scan-action)  
 - [AWS ECR GitHub Action](https://github.com/aws-actions/amazon-ecr-login)
+
+Author - Kwabena Boakye
