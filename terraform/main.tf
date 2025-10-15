@@ -71,7 +71,7 @@ docker --version
 
 
   tags = {
-    Name = "nodejs-app-server"
+    Name = "${var.project_name}-instance"
   }
 }
 
@@ -101,5 +101,9 @@ resource "aws_security_group" "app_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    name = "${var.project_name}-sg"
   }
 }

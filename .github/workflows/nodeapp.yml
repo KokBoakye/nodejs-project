@@ -107,8 +107,10 @@ jobs:
 
       - name: Run ZAP baseline scan
         run: |
-           docker run --network host --rm ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py -t http://localhost:8080 -r zap_report.html
+            docker run --network host --rm \
+            -v ${{ github.workspace }}/zap-reports:/zap/wrk \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html
 
       #### 📤 Upload Reports ####
       - name: Upload security reports
@@ -116,5 +118,4 @@ jobs:
         with:
           name: security-reports
           path: |
-            trivy-report.json
-            zap-report.html
+            zap-reports/zap-report.html
