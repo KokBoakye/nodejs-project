@@ -34,6 +34,13 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
+# Attach AmazonSSMManagedInstanceCore to the EC2 role
+resource "aws_iam_role_policy_attachment" "ssm_core" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+
 # IAM Policy for ECR access
 resource "aws_iam_role_policy" "ecr_policy" {
   name = "ecr-access-policy"
