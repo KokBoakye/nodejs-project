@@ -110,10 +110,9 @@ jobs:
         run: |
             docker run --network host --rm \
             -v ${{ github.workspace }}/zap_reports:/zap/wrk \
-            ghcr.io/zaproxy/zaproxy:stable \
+            ghcr.io/zaproxy/zaproxy:stable -u root \
             zap-baseline.py -t http://localhost:8080 -r zap_report.html
-            && chmod 666 $GITHUB_WORKSPACE/zap_reports/zap_report.html
-
+            
       #### Upload Reports ####
       - name: Upload security reports
         uses: actions/upload-artifact@v4
