@@ -4,6 +4,9 @@ on:
   push:
     branches: [ main ]
 
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
 permissions:
   contents: read
   id-token: write 
@@ -67,10 +70,7 @@ jobs:
 
       #### 🧪 SAST: SonarCloud ####
       - name: SonarQube Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        with:
-          args: >
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
