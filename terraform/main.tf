@@ -15,9 +15,22 @@ data "aws_ami" "ubuntu" {
 }
 
 resource "aws_instance" "application_server" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.instance_type
-  key_name      = var.key_name
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.instance_type
+  key_name               = var.key_name
+  ebs_optimized          = true
+  monitoring             = true
+  vpc_security_group_ids = [aws_security_group.app_sg.id]
+
+  metadata_options {
+    http_tokens   = "required"
+    http_endpoint = "enabled"
+  }
+
+  root_block_device {
+    encrypted = true
+  }
+
 
   user_data = <<-EOF
 #!/bin/bash
@@ -67,6 +80,7 @@ resource "aws_security_group" "app_sg" {
   description = "Allow SSH and HTTP inbound traffic"
 
   ingress {
+    description = "SSH from my IP"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -74,6 +88,7 @@ resource "aws_security_group" "app_sg" {
   }
 
   ingress {
+    description = "HTTP from anywhere"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -81,6 +96,7 @@ resource "aws_security_group" "app_sg" {
   }
 
   egress {
+    description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"

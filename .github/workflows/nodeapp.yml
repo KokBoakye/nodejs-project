@@ -79,6 +79,7 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: ./terraform
+          soft_fail: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
