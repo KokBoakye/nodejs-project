@@ -96,7 +96,7 @@ jobs:
       #### 🌐 DAST: OWASP ZAP ####
       - name: Bring up app for scanning
         run: |
-          docker-compose up -d
+          docker compose up -d
           sleep 6
 
       - name: Run ZAP baseline scan
