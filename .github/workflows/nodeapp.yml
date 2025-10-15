@@ -97,7 +97,13 @@ jobs:
       - name: Bring up app for scanning
         run: |
           docker compose up -d
-          sleep 6
+          sleep 10
+        
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+      - name: Pull OWASP ZAP image
+        run: docker pull owasp/zap2docker-stable
 
       - name: Run ZAP baseline scan
         run: |
