@@ -3,3 +3,9 @@ output "instance_ip" {
   value       = aws_instance.application_server.public_ip
 
 }
+
+output "instance_ids" {
+  description = "The ID of the EC2 instance"
+  value       = aws_instance.application_server.id
+
+}

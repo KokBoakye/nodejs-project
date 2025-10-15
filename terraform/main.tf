@@ -18,7 +18,7 @@ data "aws_ami" "ubuntu" {
 
 # IAM Role for EC2
 resource "aws_iam_role" "ec2_role" {
-  name = "ec2-nodejs-role-1"
+  name = "${var.project_name}-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -43,7 +43,7 @@ resource "aws_iam_role_policy_attachment" "ssm_core" {
 
 # IAM Policy for ECR access
 resource "aws_iam_role_policy" "ecr_policy" {
-  name = "ecr-access-policy-1"
+  name = "${var.project_name}-ecr-policy"
   role = aws_iam_role.ec2_role.id
 
   policy = jsonencode({
@@ -65,7 +65,7 @@ resource "aws_iam_role_policy" "ecr_policy" {
 
 # Instance profile for EC2
 resource "aws_iam_instance_profile" "ec2_instance_profile" {
-  name = "ec2-nodejs-instance-profile-1"
+  name = "${var.project_name}-instance-profile"
   role = aws_iam_role.ec2_role.name
 }
 
@@ -132,7 +132,7 @@ docker --version
 }
 
 resource "aws_security_group" "app_sg" {
-  name        = "app_security_group"
+  name        = "${var.project_name}-sg"
   description = "Allow SSH and HTTP inbound traffic"
 
   ingress {
