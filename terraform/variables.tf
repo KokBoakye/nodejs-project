@@ -26,6 +26,6 @@ variable "key_name" {
 variable "project_name" {
   description = "The name of the project for tagging resources."
   type        = string
-  default     = "nodejs-app"
+  default     = "nodejss-app"
 
 }

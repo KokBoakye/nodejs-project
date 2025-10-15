@@ -105,6 +105,9 @@ jobs:
       - name: Pull OWASP ZAP image
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
 
+      - name: Create ZAP report folder
+        run: mkdir -p $GITHUB_WORKSPACE/zap_reports
+
       - name: Run ZAP baseline scan
         run: |
             docker run --network host --rm \
