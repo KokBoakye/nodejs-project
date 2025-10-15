@@ -12,9 +12,6 @@ permissions:
   id-token: write 
   packages: write
 
-env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: nodejs
 
 jobs:
   build-and-scan:
@@ -38,7 +35,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::604312263409:role/githubuser
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Terraform Init
         run: terraform init
@@ -58,7 +55,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           IMAGE_TAG=latest
-          IMAGE_URI=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          IMAGE_URI=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG
           
           echo "Building Docker image..."
           docker build -t $IMAGE_URI .
@@ -79,6 +76,8 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: ./terraform
+          output_format: json
+          output_file_path: checkov_results.json
           soft_fail: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -120,3 +119,5 @@ jobs:
           name: security-reports
           path: |
             zap_reports/zap_report.html
+            trivy-report.json
+            checkov_results.json

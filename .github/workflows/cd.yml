@@ -2,51 +2,54 @@ name: CD Pipeline
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"] # Replace with the name of your CI workflow
+    workflows: ["CI with DevSecOps"]
     types:
       - completed
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Only run if CI succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
-      id-token: write  # for OIDC auth if needed
+      id-token: write
       packages: write
       actions: read
 
-    env:
-      AWS_REGION: us-east-1
-      ECR_REPOSITORY: nodejs
-      IMAGE_TAG: latest # or commit SHA for immutable tagging
-
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      # ✅ Secure OIDC auth
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::604312263409:role/githubuser
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # ✅ Pull dynamically from registry and repo vars
       - name: Pull Docker image from ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          echo "Pulling image..."
-          docker pull ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          IMAGE_URI=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:latest
+          echo "Pulling image: $IMAGE_URI"
+          docker pull $IMAGE_URI
 
       - name: Run Docker container
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
+          IMAGE_URI=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:latest
           docker run -d \
             --name nodejs-app \
             -p 8080:8080 \
-            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            $IMAGE_URI
 
       - name: Verify container is running
-        run: |
-          docker ps | grep nodejs-app
+        run: docker ps --filter "name=nodejs-app"
