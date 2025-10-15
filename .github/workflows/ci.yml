@@ -48,7 +48,7 @@ jobs:
         run: terraform apply -auto-approve
         working-directory: ./terraform
 
-      #### 🐳 Build and Push to AWS ECR ####
+      #### Build and Push to AWS ECR ####
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -68,13 +68,13 @@ jobs:
 
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
-      #### 🧪 SAST: SonarCloud ####
+      #### SAST: SonarCloud ####
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      #### ☁️ IaC Scan: Checkov ####
+      #### IaC Scan: Checkov ####
       - name: Run Checkov (Terraform)
         uses: bridgecrewio/checkov-action@master
         with:
@@ -83,7 +83,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      #### 🐋 Container Scan: Trivy ####
+      #### Container Scan: Trivy ####
       - name: Trivy scan image
         uses: aquasecurity/trivy-action@master
         with:
@@ -93,15 +93,13 @@ jobs:
           exit-code: 0
           severity: 'CRITICAL,HIGH'
 
-      #### 🌐 DAST: OWASP ZAP ####
+      #### DAST: OWASP ZAP ####
       - name: Bring up app for scanning
         run: |
           docker compose up -d
           sleep 10
         
-    #   - name: Login to Docker Hub
-    #     run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-
+    
       - name: Pull OWASP ZAP image
         run: docker pull ghcr.io/zaproxy/zaproxy:stable
 
@@ -113,9 +111,10 @@ jobs:
             docker run --network host --rm \
             -v ${{ github.workspace }}/zap_reports:/zap/wrk \
             ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html
+            zap-baseline.py -t http://localhost:8080 -r zap_report.html
+            && chmod 666 $GITHUB_WORKSPACE/zap_reports/zap_report.html
 
-      #### 📤 Upload Reports ####
+      #### Upload Reports ####
       - name: Upload security reports
         uses: actions/upload-artifact@v4
         with:
