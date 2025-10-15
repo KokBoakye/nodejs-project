@@ -2,7 +2,7 @@ name: CI with DevSecOps
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
 
   pull_request:
     types: [ opened, synchronize, reopened ]
@@ -121,3 +121,4 @@ jobs:
             zap_reports/zap_report.html
             trivy-report.json
             checkov_results.json
+#

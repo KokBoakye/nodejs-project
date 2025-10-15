@@ -14,6 +14,54 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
+
+
+# IAM Role for EC2
+resource "aws_iam_role" "ec2_role" {
+  name = "ec2-nodejs-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# IAM Policy for ECR access
+resource "aws_iam_role_policy" "ecr_policy" {
+  name = "ecr-access-policy"
+  role = aws_iam_role.ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Instance profile for EC2
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
+  name = "ec2-nodejs-instance-profile"
+  role = aws_iam_role.ec2_role.name
+}
+
 resource "aws_instance" "application_server" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
@@ -21,6 +69,7 @@ resource "aws_instance" "application_server" {
   ebs_optimized          = true
   monitoring             = true
   vpc_security_group_ids = [aws_security_group.app_sg.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_instance_profile.name
 
   metadata_options {
     http_tokens   = "required"
