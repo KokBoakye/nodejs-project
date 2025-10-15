@@ -23,13 +23,12 @@ jobs:
           role-to-assume: arn:aws:iam::604312263409:role/githubuser
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Get EC2 Instance ID
-        id: ec2
+      - name: Get EC2 Instance ID from Terraform
         run: |
-          INSTANCE_ID=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=${{ vars.ECR_REPOSITORY }}-instance" \
-            --query "Reservations[0].Instances[0].InstanceId" --output text)
-          echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
+            cd terraform
+            INSTANCE_ID=$(terraform output -raw instance_id)
+            echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
+
 
       - name: Deploy Docker container via SSM
         run: |

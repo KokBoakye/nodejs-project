@@ -4,7 +4,7 @@ output "instance_ip" {
 
 }
 
-output "instance_ids" {
+output "instance_id" {
   description = "The ID of the EC2 instance"
   value       = aws_instance.application_server.id
 
