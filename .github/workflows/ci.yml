@@ -111,7 +111,7 @@ jobs:
       - name: Run ZAP baseline scan
         run: |
             docker run --network host --rm \
-            -v ${{ github.workspace }}/zap-reports:/zap/wrk \
+            -v ${{ github.workspace }}/zap_reports:/zap/wrk \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py -t http://localhost:8080 -r /zap/wrk/zap_report.html
 
@@ -121,4 +121,4 @@ jobs:
         with:
           name: security-reports
           path: |
-            zap-reports/zap-report.html
+            zap_reports/zap_report.html
