@@ -50,28 +50,28 @@ jobs:
         working-directory: ./terraform
 
       - name: Terraform Apply
-        run: terraform destroy -auto-approve
+        run: terraform apply -auto-approve
         working-directory: ./terraform
 
-#       #### Build and Push to AWS ECR ####
-#       - name: Login to Amazon ECR
-#         id: login-ecr
-#         uses: aws-actions/amazon-ecr-login@v2
+      #### Build and Push to AWS ECR ####
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-#       - name: Build, Tag, and Push image to ECR
-#         env:
-#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-#         run: |
-#           IMAGE_TAG=latest
-#           IMAGE_URI=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG
+      - name: Build, Tag, and Push image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGE_TAG=latest
+          IMAGE_URI=$ECR_REGISTRY/${{ vars.ECR_REPOSITORY }}:$IMAGE_TAG
           
-#           echo "Building Docker image..."
-#           docker build -t $IMAGE_URI .
+          echo "Building Docker image..."
+          docker build -t $IMAGE_URI .
 
-#           echo "Pushing image to ECR..."
-#           docker push $IMAGE_URI
+          echo "Pushing image to ECR..."
+          docker push $IMAGE_URI
 
-#           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
 #       #### SAST: SonarCloud ####
 #       - name: SonarQube Scan
