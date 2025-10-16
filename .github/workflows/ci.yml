@@ -50,7 +50,7 @@ jobs:
         working-directory: ./terraform
 
       - name: Terraform Apply
-        run: terraform destroy -auto-approve
+        run: terraform apply -auto-approve
         working-directory: ./terraform
 
       #### Build and Push to AWS ECR ####
@@ -130,4 +130,4 @@ jobs:
 #             zap_reports/zap_report.html
 #             trivy-report.html
 #             checkov_results.html
-# #
+# # #
