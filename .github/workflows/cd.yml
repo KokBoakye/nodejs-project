@@ -24,12 +24,16 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       # Download Terraform state from remote backend (S3)
-      - name: Get EC2 Instance ID from Terraform remote state
+      - name: Get EC2 Instance ID from SSM Parameter Store
         run: |
-          aws s3 cp s3://${{ vars.TF_STATE_BUCKET }}/${{ vars.TF_STATE_KEY }} terraform.tfstate
-          INSTANCE_ID=$(jq -r '.outputs.instance_id.value' terraform.tfstate)
+          INSTANCE_ID=$(aws ssm get-parameter \
+            --name "/nodejs-app/instance-id" \
+            --query "Parameter.Value" \
+            --output text)
+
           echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
           echo "Fetched EC2 Instance ID: $INSTANCE_ID"
+
 
       # Set dynamic environment variables from vars and AWS
       - name: Set environment variables
