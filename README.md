@@ -8,8 +8,8 @@ This repository demonstrates a complete **CI/CD pipeline** integrated with **Dev
 
 The workflow is split into two parts:
 
-1. **CI Pipeline** – triggered on push to `main` branch or pull requests  
-2. **CD Pipeline** – triggered automatically after successful CI runs  
+1. **CI Pipeline** – triggered on push to `dev` branch or pull requests  
+2. **CD Pipeline** – triggered on push to main branch or pull requests 
 
 ---
 
