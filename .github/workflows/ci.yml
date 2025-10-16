@@ -84,8 +84,8 @@ jobs:
 #         uses: bridgecrewio/checkov-action@master
 #         with:
 #           directory: ./terraform
-#           output_format: json
-#           output_file_path: checkov_results.json
+#           output_format: html
+#           output_file_path: checkov_results.html
 #           soft_fail: true
 #         env:
 #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,8 +95,9 @@ jobs:
 #         uses: aquasecurity/trivy-action@master
 #         with:
 #           image-ref: ${{ env.IMAGE_URI }}
-#           format: 'json'
-#           output: 'trivy-report.json'
+#           format: 'template'
+#           template: '@contrib/html.tpl'
+#           output: 'trivy-report.html'
 #           exit-code: 0
 #           severity: 'CRITICAL,HIGH'
 
@@ -127,6 +128,6 @@ jobs:
 #           name: security-reports
 #           path: |
 #             zap_reports/zap_report.html
-#             trivy-report.json
-#             checkov_results.json
+#             trivy-report.html
+#             checkov_results.html
 # #
