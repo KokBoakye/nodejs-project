@@ -95,6 +95,16 @@ set -xe
 # Update package index
 apt-get update -y
 
+# Update packages and install dependencies
+apt-get update -y
+apt-get install -y unzip curl jq docker.io
+
+# Install AWS CLI v2
+echo "Installing AWS CLI v2..."
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -q awscliv2.zip
+sudo ./aws/install
+
 # Install prerequisite packages
 apt-get install -y ca-certificates curl gnupg lsb-release
 
@@ -163,4 +173,11 @@ resource "aws_security_group" "app_sg" {
     name = "${var.project_name}-sg"
   }
 }
-#
+
+
+resource "aws_ssm_parameter" "instance_id" {
+  name  = "/nodejs-app/instance-id"
+  type  = "String"
+  value = aws_instance.application_server.id
+}
+
