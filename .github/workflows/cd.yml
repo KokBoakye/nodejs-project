@@ -1,4 +1,4 @@
-name: CD Pipeline 
+name: CD Pipeline
 
 on:
   push:
@@ -23,24 +23,34 @@ jobs:
           role-to-assume: arn:aws:iam::604312263409:role/githubuser
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Get EC2 Instance ID from Terraform
+      # Download Terraform state from remote backend (S3)
+      - name: Get EC2 Instance ID from Terraform remote state
         run: |
-            cd terraform
-            INSTANCE_ID=$(terraform output -raw instance_id)
-            echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
+          aws s3 cp s3://${{ vars.TF_STATE_BUCKET }}/${{ vars.TF_STATE_KEY }} terraform.tfstate
+          INSTANCE_ID=$(jq -r '.outputs.instance_id.value' terraform.tfstate)
+          echo "INSTANCE_ID=$INSTANCE_ID" >> $GITHUB_ENV
+          echo "Fetched EC2 Instance ID: $INSTANCE_ID"
 
+      # Set dynamic environment variables from vars and AWS
+      - name: Set environment variables
+        run: |
+          echo "AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ vars.IMAGE_TAG }}" >> $GITHUB_ENV
 
+      # Deploy Docker container via SSM
       - name: Deploy Docker container via SSM
         run: |
           aws ssm send-command \
             --instance-ids "${{ env.INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy Docker container" \
-            --parameters commands='[
-              "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com",
-              "docker pull ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}",
-              "docker stop nodejs-app || true",
-              "docker rm nodejs-app || true",
-              "docker run -d --name nodejs-app -p 80:8080 ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
-            ]' \
+            --parameters '{
+              "commands": [
+                "aws ecr get-login-password --region ${{ vars.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com",
+                "docker pull ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}",
+                "docker stop nodejs-app || true",
+                "docker rm nodejs-app || true",
+                "docker run -d --name nodejs-app -p 80:8080 ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com/${{ vars.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+              ]
+            }' \
             --region "${{ vars.AWS_REGION }}"
